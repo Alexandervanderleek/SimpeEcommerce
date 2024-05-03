@@ -3,7 +3,7 @@
 import prisma from '@/db/db'
 import {z} from 'zod'
 import fs from 'fs/promises'
-import { redirect } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 
 const fileSchema = z.instanceof(File)
 
@@ -17,7 +17,7 @@ const addSchema = z.object({
     image: imageSchema.refine(file=>file.size>0,"Required"),
 })
 
-export async function addProduct(formData: FormData){
+export async function addProduct(prevState:unknown,formData: FormData){
     
 
     const result = addSchema.safeParse(Object.fromEntries(formData.entries()))
@@ -38,6 +38,7 @@ export async function addProduct(formData: FormData){
     await fs.writeFile(`public${imagePath}`, Buffer.from(await data.image.arrayBuffer()))
 
     prisma.product.create({data:{
+        isAvailableForPurchase: false,
         name: data.name,
         description: data.description,
         priceInCents: data.priceInCents,
@@ -49,4 +50,19 @@ export async function addProduct(formData: FormData){
     }
 
     redirect('/admin/products')
+}
+
+
+export async function toggleAvail(id:string, isAvail:boolean){
+    await prisma.product.update({where:{id},data:{isAvailableForPurchase:isAvail}})
+}
+
+export async function deleteProduct(id: string){
+   const product =  await prisma.product.delete({where:{id}})
+    if(product == null) return notFound()
+    
+        await fs.unlink(product.filePath)
+        await fs.unlink(`public${product.imagePath}`)
+
+
 }
