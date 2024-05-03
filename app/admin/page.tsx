@@ -4,11 +4,17 @@ import prisma from '@/db/db'
 import { formatCurrency, formatNumber } from '@/lib/formaters'
 
 
+function wait(duration:number){
+    return new Promise(resolve=>setTimeout(resolve,duration))
+}
+
 async function getSalesData(){
     const data = await prisma.order.aggregate({
         _sum: {pricePaidCents: true},
         _count: true
     })
+
+    await wait(2000)
 
     return {
         amount: (data._sum.pricePaidCents || 0)/100,
@@ -33,16 +39,32 @@ async function getUserData(){
     }
 }
 
+
+async function getProductData(){
+
+    const [activeCount,inactiveCount] = await Promise.all([
+         await prisma.product.count({where: {isAvailableForPurchase: true}}),
+         await prisma.product.count({where: {isAvailableForPurchase: true}})
+    ])
+
+   
+
+    return {
+         activeCount,
+         inactiveCount
+    }
+}
+
 const  AdminPage = async () => {
     
-    const [salesData, userData] = await Promise.all([ getSalesData(), getUserData()])
+    const [salesData, userData, productData] = await Promise.all([ getSalesData(), getUserData(), getProductData()])
 
   
     return (
     <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
         <DashboardCard title='Sales' subtitle={`${formatNumber(salesData.numberOfSales)} Orders`} body={formatCurrency(salesData.amount)} />
         <DashboardCard title='Customers' subtitle={`${formatCurrency(userData.averagePerUser)} Average Value`} body={formatNumber(userData.userCount)} />
-        <DashboardCard title='Sales' subtitle={`${formatNumber(salesData.numberOfSales)} Orders`} body={formatCurrency(salesData.amount)} />
+        <DashboardCard title='Active Products' subtitle={`${formatNumber(productData.activeCount)} Inactive`} body={formatNumber(productData.inactiveCount)} />
 
 
     </div>
