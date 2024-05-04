@@ -13,8 +13,17 @@ import {
 import prisma from "@/db/db";
 import { CheckCircle2, MoreVertical, XCircleIcon } from "lucide-react";
 import { formatCurrency, formatNumber } from "@/lib/formaters";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ActiveToggleDropdownItem, DeleteDropDownItem } from "./_components/ProductActions";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  ActiveToggleDropdownItem,
+  DeleteDropDownItem,
+} from "./_components/ProductActions";
 
 const ProductsAdminPage = () => {
   return (
@@ -79,36 +88,38 @@ async function ProductsTable() {
                 )}
               </TableCell>
               <TableCell>{item.name}</TableCell>
-              <TableCell>{formatCurrency(item.priceInCents/100)}</TableCell>
+              <TableCell>{formatCurrency(item.priceInCents / 100)}</TableCell>
               <TableCell>{formatNumber(item._count.order)}</TableCell>
               <TableCell>
-                
                 <DropdownMenu>
                   <DropdownMenuTrigger>
                     <MoreVertical></MoreVertical>
-  
+
                     <span className="sr-only">Actions</span>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
                     <DropdownMenuItem asChild>
-                      <a download href={`/admin/products/${item.id}`}>Download</a>
+                      <a download href={`/admin/products/${item.id}/download`}>
+                        Download
+                      </a>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href={`/admin/products/${item.id}/edit`}>Edit</Link>
                     </DropdownMenuItem>
-                    
+
                     <DropdownMenuSeparator></DropdownMenuSeparator>
 
-                    <ActiveToggleDropdownItem id={item.id} isAvail={item.isAvailableForPurchase}>
-
-                    </ActiveToggleDropdownItem>
-                    <DeleteDropDownItem id={item.id} disabled={item._count.order>0}></DeleteDropDownItem>
-
+                    <ActiveToggleDropdownItem
+                      id={item.id}
+                      isAvail={item.isAvailableForPurchase}
+                    ></ActiveToggleDropdownItem>
+                    <DeleteDropDownItem
+                      id={item.id}
+                      disabled={item._count.order > 0}
+                    ></DeleteDropDownItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                
               </TableCell>
-
             </TableRow>
           ))}
         </TableBody>
